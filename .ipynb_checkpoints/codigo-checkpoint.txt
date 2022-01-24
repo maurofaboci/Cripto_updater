@@ -1,0 +1,96 @@
+#Imports 
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
+
+# Navegando nas paginas para pegar a cotação atual das moedas (Navegação MILK)
+
+navegador = webdriver.Chrome()
+navegador.get("https://poocoin.app/tokens/0xbf37f781473f3b50e82c668352984865eac9853f")
+cotacao_milk = WebDriverWait(navegador, 10).until(
+        EC.presence_of_element_located((By.XPATH, '//*[@id="root"]/div/div[1]/div[2]/div/div[2]/div[1]/div[1]/div/div[1]/div/span'))).text
+navegador.quit()
+
+#print(cotacao_milk.replace("$", ''))
+
+# Navegando nas paginas para pegar a cotação atual das moedas (Navegação THC)
+
+navegador = webdriver.Chrome()
+navegador.get("https://poocoin.app/tokens/0x24802247bd157d771b7effa205237d8e9269ba8a")
+cotacao_thc = WebDriverWait(navegador, 10).until(
+        EC.presence_of_element_located((By.XPATH, '//*[@id="root"]/div/div[1]/div[2]/div/div[2]/div[1]/div[1]/div/div[1]/div/span'))).text
+navegador.quit()
+
+#print(cotacao_thc.replace("$", ''))
+
+# Navegando nas paginas para pegar a cotação atual das moedas (Navegação THG)
+
+navegador = webdriver.Chrome()
+navegador.get("https://poocoin.app/tokens/0x9fd87aefe02441b123c3c32466cd9db4c578618f")
+cotacao_thg = WebDriverWait(navegador, 10).until(
+        EC.presence_of_element_located((By.XPATH, '//*[@id="root"]/div/div[1]/div[2]/div/div[2]/div[1]/div[1]/div/div[1]/div/span'))).text
+navegador.quit()
+
+#print(cotacao_thg.replace("$", ''))
+
+# Navegando nas paginas para pegar a cotação atual das moedas (Navegação MAFA)
+
+navegador = webdriver.Chrome()
+navegador.get("https://poocoin.app/tokens/0xaf44400a99a9693bf3c2e89b02652babacc5cdb9")
+cotacao_mafa = WebDriverWait(navegador, 10).until(
+        EC.presence_of_element_located((By.XPATH, '//*[@id="root"]/div/div[1]/div[2]/div/div[2]/div[1]/div[1]/div/div[1]/div/span'))).text
+navegador.quit()
+
+#print(cotacao_mafa.replace("$", ''))
+
+# Navegando nas paginas para pegar a cotação atual das moedas (Navegação DRACO)
+
+navegador = webdriver.Chrome()
+navegador.get("https://www.mir4draco.com/price")
+cotacao_draco = WebDriverWait(navegador, 30).until(
+        EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div/div/main/div/section[2]/div[1]/div/div[1]/div/div[4]/div/div/dl/dd/span[1]'))).text
+navegador.quit()
+
+#print(cotacao_draco.replace("$", ''))
+
+#Tratando as moedas para poder converter a FLOAT na tabela (tive dificuldade de mudar dois valores em um só for)
+
+moedasdlr = [cotacao_milk, cotacao_thc, cotacao_thg, cotacao_mafa, cotacao_draco]
+moedas = []
+for num in moedasdlr: 
+    moedasnew = num.replace(",",".")
+    moedas.append(moedasnew)
+print(moedas)
+
+moedasok = []
+for num in moedas: 
+    moedasnew = num.replace("$","")
+    moedasok.append(moedasnew)
+print(moedasok)
+
+#importando a tabela 
+import pandas as pd
+
+tabela = pd.read_excel("tabela.xlsx")
+
+display(tabela)
+
+#atualizando a tabela com as cotações atuais
+
+tabela.loc[tabela['Moeda'] == 'DRACO','cotacao atual'] = float(moedasok[4])
+tabela.loc[tabela['Moeda'] == 'THG','cotacao atual'] = float(moedasok[2])
+tabela.loc[tabela['Moeda'] == 'THC','cotacao atual'] = float(moedasok[1])
+tabela.loc[tabela['Moeda'] == 'MAFA','cotacao atual'] = float(moedasok[3])
+tabela.loc[tabela['Moeda'] == 'MILK','cotacao atual'] = float(moedasok[0])
+
+#atualizando os valores totais 
+
+tabela["Vl_recebido"] = tabela["Qt_Moedas"] * tabela["cotacao atual"]
+
+display(tabela)
+
+#salvando a tabela na pasta
+tabela.to_excel("tabela.xlsx")
